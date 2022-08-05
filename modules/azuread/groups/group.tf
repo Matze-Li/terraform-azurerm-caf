@@ -1,5 +1,13 @@
+locals {
+  # Keep global prefix if no custom prefix provided
+  prefix = lookup(var.azuread_groups, "prefix", null) == null ? var.global_settings.prefixes.0 : var.azuread_groups.prefix
+
+  # Format prefix for name 
+  display_name =  trim(format("%s%s",try(format("%s-", local.prefix), ""), var.azuread_groups.name),  "-")
+}
+
 resource "azuread_group" "group" {
-  display_name            = lookup(var.azuread_groups, "passthrough", null) == true ? format("%s", var.azuread_groups.name) : format("%s%s", try(format("%s-", var.global_settings.prefixes.0), ""), var.azuread_groups.name)
+  display_name            = local.display_name
   description             = lookup(var.azuread_groups, "description", null)
   prevent_duplicate_names = lookup(var.azuread_groups, "prevent_duplicate_names", null)
   owners                  = local.owners
